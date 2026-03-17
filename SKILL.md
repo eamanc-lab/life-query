@@ -12,6 +12,17 @@ homepage: https://github.com/eamanc-lab/life-query
 
 本 skill 通过中转服务 `https://api.fenxianglife.com` 查询快递数据，该服务再调用快递100等数据源。你提供的快递单号会发送到该端点。
 
+默认提供一定的免费查询额度，无需任何配置即可使用。如果免费额度不够，可以配置自己的快递100凭证：
+
+1. 前往 [快递100 API](https://api.kuaidi100.com/) 注册账号并开通实时查询接口
+2. 获取 `授权Key`（对应参数 `kuaidi100Key`）和 `Customer`（对应参数 `kuaidi100Customer`）
+3. 查询时传入即可，系统会优先使用你的凭证：
+
+```bash
+bash scripts/run.sh call courier-track --trackingNumber SF1234567890 \
+  --kuaidi100Key YOUR_KEY --kuaidi100Customer YOUR_CUSTOMER
+```
+
 ## 使用场景
 
 - 用户发来一个快递单号，想知道包裹到哪了
