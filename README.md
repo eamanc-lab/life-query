@@ -28,3 +28,7 @@ bash scripts/run.sh call oil-price --format table
 ```bash
 npx clawhub@latest install life-query
 ```
+
+## Changelog
+
+- 2026-03-17: fix — 接口移除 API Key 验证，快递查询恢复正常
