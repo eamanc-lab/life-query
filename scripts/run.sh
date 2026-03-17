@@ -21,20 +21,31 @@ case "$cmd" in
   list)
     echo "可用接口："
     python3 - "$API_DIR" <<'PYEOF'
-import os, sys, yaml
+import os, sys, re, yaml
 api_dir = sys.argv[1]
 rows = []
 for f in sorted(os.listdir(api_dir)):
-    if f.startswith('_') or not f.endswith('.yaml'):
+    if f.startswith('_'):
         continue
     path = os.path.join(api_dir, f)
-    with open(path) as fp:
-        d = yaml.safe_load(fp)
-    rows.append((d.get('name',''), d.get('method',''), d.get('path',''), d.get('description','')))
+    if f.endswith('.yaml'):
+        with open(path) as fp:
+            d = yaml.safe_load(fp)
+        rows.append((d.get('name',''), d.get('method',''), 'YAML', d.get('description','')))
+    elif f.endswith('.sh'):
+        name = f[:-3]
+        desc = ''
+        with open(path) as fp:
+            for line in fp:
+                m = re.match(r'^#\s*description:\s*(.+)', line)
+                if m:
+                    desc = m.group(1).strip()
+                    break
+        rows.append((name, '脚本', '脚本', desc))
 if rows:
     w = [max(len(r[i]) for r in rows) for i in range(4)]
     fmt = f"  {{:<{w[0]}}}  {{:<{w[1]}}}  {{:<{w[2]}}}  {{}}"
-    print(fmt.format('接口名', '方法', '路径', '说明'))
+    print(fmt.format('接口名', '方法', '类型', '说明'))
     print('  ' + '─'*(sum(w)+8))
     for r in rows:
         print(fmt.format(*r))
@@ -109,6 +120,8 @@ body_data = {}
 for field, meta in (body_cfg.get('fields') or {}).items():
     if field in cli:
         body_data[field] = cli[field]
+    elif isinstance(meta, dict) and meta.get('env') and os.environ.get(meta['env']):
+        body_data[field] = os.environ[meta['env']]
 
 # 路径参数替换
 url = base_url.rstrip('/') + path

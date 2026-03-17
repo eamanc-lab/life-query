@@ -19,10 +19,12 @@ body:
     kuaidi100Key:
       type: string
       required: false
+      env: KUAIDI100_KEY
       description: 用户自己的快递100 API Key，优先于系统配置
     kuaidi100Customer:
       type: string
       required: false
+      env: KUAIDI100_CUSTOMER
       description: 用户自己的快递100 Customer，与 kuaidi100Key 配套使用
 
 response:
