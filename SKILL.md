@@ -1,11 +1,16 @@
 ---
 name: life-query
-description: Track parcels and check courier shipment status for Chinese carriers (SF Express, YTO, JD, ZTO, etc.) via natural language. Use when user asks to "查快递", "track package", "tracking number", "物流查询", "快递单号", "where is my parcel", "shipment status", "包裹到哪了".
+description: Track parcels and check courier shipment status for Chinese carriers (SF Express, YTO, JD, ZTO, etc.) via natural language. Requests are sent to https://api.fenxianglife.com which proxies to courier data providers. Use when user asks to "查快递", "track package", "tracking number", "物流查询", "快递单号", "where is my parcel", "shipment status", "包裹到哪了".
+homepage: https://github.com/eamanc-lab/life-query
 ---
 
 # Life Query — 日常生活查询助手
 
 查快递物流轨迹，支持国内主流快递公司（顺丰、圆通、京东、中通等），输入单号即可查询。
+
+## 外部服务声明
+
+本 skill 通过中转服务 `https://api.fenxianglife.com` 查询快递数据，该服务再调用快递100等数据源。你提供的快递单号会发送到该端点。
 
 ## 使用场景
 

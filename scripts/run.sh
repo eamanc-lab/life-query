@@ -6,11 +6,6 @@ SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 API_DIR="$SKILL_DIR/apis"
 ENV_YAML="$API_DIR/_env.yaml"
 
-# 加载 .env（当前目录 → skill 目录 → home）
-for env_file in ".env" "$SKILL_DIR/.env" "$HOME/.config/fenxiang-api/.env"; do
-  [ -f "$env_file" ] && { set -a; source "$env_file"; set +a; break; }
-done
-
 usage() {
   echo "用法:"
   echo "  bash run.sh list                        # 列出所有可用接口"
