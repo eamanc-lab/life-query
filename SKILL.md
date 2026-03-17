@@ -1,6 +1,6 @@
 ---
 name: life-query
-description: 日常生活查询助手。声明式 YAML 注册接口，自然语言匹配调用。当用户需要查询快递物流、查询单号轨迹，或提到"快递查询"、"物流轨迹"、"单号查询"等时触发。后续将陆续支持更多生活查询能力。
+description: Daily life query assistant. Declarative YAML API registry with natural language intent matching. Trigger when the user needs to track a parcel, check shipment status, or mentions "package tracking", "courier tracking", "tracking number", "where is my parcel", etc. More life query capabilities will be added over time.
 ---
 
 # Life Query
@@ -39,8 +39,3 @@ bash scripts/run.sh call courier-track --trackingNumber SF1234567890 --format ta
 | "这个单号的物流在哪里：75555555555" | courier-track | trackingNumber=75555555555 |
 | "用我自己的快递100 key 查单号" | courier-track | +kuaidi100Key/Customer |
 
-## 添加新接口
-
-在 `apis/` 下创建 `.yaml` 文件即自动注册，格式参考 `references/yaml-spec.md`。
-
-复杂接口（分页/多步骤）用 `.sh` 脚本，放同目录，头部加 `# name:` 和 `# description:` 注释。

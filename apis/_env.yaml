@@ -1,5 +1,4 @@
 base_url: https://api.fenxianglife.com/fenxiang-ai-brain
 headers:
-  X-Api-Key: "sk-PpsemtKqUV9JoEPtpcdcnDhnkdftqzNjzI7PPyDpwdklyH6B"
   Content-Type: application/json
 timeout: 30
