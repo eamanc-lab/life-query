@@ -1,6 +1,6 @@
 ---
 name: life-query
-description: Query everyday life info — parcel tracking via Kuaidi100 for Chinese carriers (SF Express, ZTO, YTO, JD), real-time and historical currency exchange rates from ECB (30 currencies including CNY/USD/EUR/JPY), and gasoline/diesel prices for all 31 provinces in China from NDRC. Use when user asks "查快递", "track package", "物流查询", "包裹到哪了", "汇率", "exchange rate", "多少钱换", "美元人民币", "油价", "gas price", "今天92多少钱", "加油多少钱".
+description: Query everyday life info — parcel tracking via Kuaidi100 for Chinese carriers (顺丰/圆通/中通/韵达/京东), real-time and historical currency exchange rates and conversion from ECB (30 currencies including CNY/USD/EUR/JPY/GBP/HKD/KRW), and gasoline/diesel fuel prices for all 31 provinces in China from NDRC. Use when user asks "查快递", "快递单号", "track package", "shipping", "delivery", "物流查询", "包裹到哪了", "顺丰到哪了", "汇率", "外汇", "换算", "exchange rate", "currency converter", "多少钱换", "美元人民币", "日元汇率", "货币转换", "油价", "加油", "gas price", "fuel price", "今天92多少钱", "加油多少钱", "加油站".
 clawhub-slug: life-query
 clawhub-owner: eamanc-lab
 homepage: https://github.com/eamanc-lab/life-query
