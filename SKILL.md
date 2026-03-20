@@ -24,8 +24,7 @@ homepage: https://github.com/eamanc-lab/life-query
 ## 前置条件
 
 - **必需**：`curl`、`python3`（系统自带即可）
-- **可选**：`pip install pyyaml`（run.sh 的 YAML 解析依赖，通常已安装）
-- **可选**：自有快递100凭证（不配也能用，有默认免费额度）
+- **可选**：自有快递100凭证（不配也能用，有默认免费额度；配置后直连快递100，不经过任何第三方）
 
 ## 决策流程
 
@@ -59,12 +58,12 @@ homepage: https://github.com/eamanc-lab/life-query
 
 | 接口 | 实现方式 | 说明 | 数据源 |
 |------|---------|------|--------|
-| courier-track | YAML + curl | 快递物流轨迹查询 | 快递100（经 fenxianglife.com 中转） |
+| courier-track | Shell 脚本 | 快递物流轨迹查询 | 快递100（直连或免费代理） |
 | exchange-rate | Shell 脚本 | 实时/历史汇率，货币换算 | 欧洲央行 ECB（frankfurter.app） |
 | oil-price | Shell 脚本 | 全国各省油价（92/95/柴油） | 东方财富/国家发改委 |
 | weather | Shell 脚本 | 全球城市天气（当前+多日预报） | wttr.in / WorldWeatherOnline |
 
-> **目录约定**：`apis/` 存放所有可调用接口，YAML 和 sh 是两种实现方式。`scripts/run.sh` 是统一调度引擎——先查 `apis/<name>.sh` 直接执行，未找到则解析 `apis/<name>.yaml` 构建 curl 请求。新增接口只需在 `apis/` 下添加文件。
+> **目录约定**：`apis/` 存放所有可调用接口（Shell 脚本），`scripts/run.sh` 是统一调度引擎。新增接口只需在 `apis/` 下添加 `.sh` 文件。
 
 ## 使用方式
 
@@ -205,22 +204,22 @@ JSON 格式返回字段：`city`、`current`（temp_C/feels_like_C/desc/humidity
 
 ## 外部服务声明
 
-本 skill 通过中转服务 `https://api.fenxianglife.com` 查询快递数据，该服务再调用快递100等数据源。你提供的快递单号会发送到该端点。
+本 skill 调用以下外部服务，所有网络请求均可在 `apis/*.sh` 中审查：
 
-天气数据通过 `https://wttr.in` 查询，该服务使用 WorldWeatherOnline 作为数据源。你查询的城市名会发送到该端点。无需注册、无需 API Key。
+| 接口 | 端点 | 发送的数据 | 凭证处理 |
+|------|------|-----------|---------|
+| courier-track（免费模式） | `api.fenxianglife.com` | 仅快递单号 | **不发送任何凭证** |
+| courier-track（自有凭证） | `poll.kuaidi100.com` | 快递单号 + 签名 | **直连快递100，不经过任何第三方** |
+| exchange-rate | `api.frankfurter.app` | 货币代码、金额 | 无需凭证 |
+| oil-price | `datacenter-web.eastmoney.com` | 省份名 | 无需凭证 |
+| weather | `wttr.in` | 城市名 | 无需凭证 |
 
-默认提供一定的免费查询额度，无需任何配置即可使用。如需更高额度，配置自有快递100凭证：
+**凭证隔离保证**：当配置了 `KUAIDI100_KEY`/`KUAIDI100_CUSTOMER` 时，快递查询直连 `poll.kuaidi100.com`，你的 API Key **绝不会**发送到 fenxianglife.com 或其他第三方。
 
 ```bash
+# 配置自有凭证后自动切换到直连通道
 export KUAIDI100_KEY=你的授权Key
 export KUAIDI100_CUSTOMER=你的Customer编码
-```
-
-配置后自动读取，也可通过命令行参数临时覆盖：
-
-```bash
-bash scripts/run.sh call courier-track --trackingNumber SF1234567890 \
-  --kuaidi100Key YOUR_KEY --kuaidi100Customer YOUR_CUSTOMER
 ```
 
 ## 更新本 Skill
