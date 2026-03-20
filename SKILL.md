@@ -230,5 +230,3 @@ ClawHub 唯一标识：**slug `life-query`**（owner: `eamanc-lab`）
 ```bash
 npx clawhub@latest update life-query
 ```
-
-⚠️ ClawHub 上有多个物流/快递类 skill（如 logistics、package-track），与本 skill 无关。更新时必须使用精确 slug，禁止通过搜索替换。
