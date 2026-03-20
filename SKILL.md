@@ -1,6 +1,6 @@
 ---
 name: life-query
-description: Query everyday life info — parcel tracking via Kuaidi100 for Chinese carriers (顺丰/圆通/中通/韵达/京东), real-time and historical currency exchange rates and conversion from ECB (30 currencies including CNY/USD/EUR/JPY/GBP/HKD/KRW), and gasoline/diesel fuel prices for all 31 provinces in China from NDRC. Use when user asks "查快递", "快递单号", "track package", "shipping", "delivery", "物流查询", "包裹到哪了", "顺丰到哪了", "汇率", "外汇", "换算", "exchange rate", "currency converter", "多少钱换", "美元人民币", "日元汇率", "货币转换", "油价", "加油", "gas price", "fuel price", "今天92多少钱", "加油多少钱", "加油站".
+description: Query everyday life info — parcel tracking via Kuaidi100 for Chinese carriers (顺丰/圆通/中通/韵达/京东), real-time and historical currency exchange rates and conversion from ECB (30 currencies including CNY/USD/EUR/JPY/GBP/HKD/KRW), gasoline/diesel fuel prices for all 31 provinces in China from NDRC, and global city weather forecasts via wttr.in (current conditions, multi-day forecasts, hourly details). Use when user asks "查快递", "快递单号", "track package", "shipping", "delivery", "物流查询", "包裹到哪了", "顺丰到哪了", "汇率", "外汇", "换算", "exchange rate", "currency converter", "多少钱换", "美元人民币", "日元汇率", "货币转换", "油价", "加油", "gas price", "fuel price", "今天92多少钱", "加油多少钱", "加油站", "天气", "气温", "weather", "forecast", "明天天气", "今天多少度", "会下雨吗", "穿什么衣服", "天气预报", "温度", "湿度", "紫外线", "日出日落".
 clawhub-slug: life-query
 clawhub-owner: eamanc-lab
 homepage: https://github.com/eamanc-lab/life-query
@@ -8,14 +8,15 @@ homepage: https://github.com/eamanc-lab/life-query
 
 # Life Query — 日常生活查询助手
 
-快递物流跟踪、实时汇率换算、全国油价查询。三合一日常信息查询工具。
+快递物流跟踪、实时汇率换算、全国油价查询、全球天气预报。四合一日常信息查询工具。
 
 ## 使用场景
 
 - 用户给了一个快递单号，想查物流到哪了
 - 用户问"100美元换多少人民币"、"今天日元汇率"
 - 用户问"今天油价多少"、"北京92号多少钱"
-- 用户出差/旅行前想了解目的地油价或货币汇率
+- 用户问"北京天气怎么样"、"明天会下雨吗"、"东京这周气温"
+- 用户出差/旅行前想了解目的地天气、油价或货币汇率
 - 用户想对比一段时间内的汇率走势
 
 ## 前置条件
@@ -41,6 +42,12 @@ homepage: https://github.com/eamanc-lab/life-query
   │     ├─ 提到了省份/城市 → --city 参数
   │     └─ 没提 → 默认全国
   │
+  ├─ 包含天气/气温/预报/下雨关键词 → weather
+  │     ├─ 明确了城市 → --city 参数
+  │     ├─ 没提城市 → 追问用户所在城市
+  │     ├─ 问"明天/这周" → --days 3
+  │     └─ 问"逐小时" → --detail
+  │
   └─ 不确定 → 追问用户想查什么
 ```
 
@@ -53,6 +60,7 @@ homepage: https://github.com/eamanc-lab/life-query
 | courier-track | YAML + curl | 快递物流轨迹查询 | 快递100（经 fenxianglife.com 中转） |
 | exchange-rate | Shell 脚本 | 实时/历史汇率，货币换算 | 欧洲央行 ECB（frankfurter.app） |
 | oil-price | Shell 脚本 | 全国各省油价（92/95/柴油） | 东方财富/国家发改委 |
+| weather | Shell 脚本 | 全球城市天气（当前+多日预报） | wttr.in / WorldWeatherOnline |
 
 > **目录约定**：`apis/` 存放所有可调用接口，YAML 和 sh 是两种实现方式。`scripts/run.sh` 是统一调度引擎——先查 `apis/<name>.sh` 直接执行，未找到则解析 `apis/<name>.yaml` 构建 curl 请求。新增接口只需在 `apis/` 下添加文件。
 
@@ -126,6 +134,59 @@ bash scripts/run.sh call oil-price --format table
 上海     7.74    8.24    7.40   +0.10   +0.11
 ```
 
+### 天气查询
+
+```bash
+# 查询当前天气
+bash scripts/run.sh call weather --city 北京
+
+# 查询 3 天预报（表格格式）
+bash scripts/run.sh call weather --city Shanghai --days 3 --format table
+
+# 查询含逐小时详情的预报
+bash scripts/run.sh call weather --city Tokyo --days 1 --detail
+
+# 支持多种位置格式
+bash scripts/run.sh call weather --city "New York"
+bash scripts/run.sh call weather --city 广州
+```
+
+输出示例（table 格式）：
+```
+上海 天气
+当前: Partly cloudy, 15°C (体感 15°C)
+湿度: 41%  风: ENE 15km/h  UV: 3  降水: 0.0mm
+
+日期              最高    最低 天气                   降雨概率
+────────────────────────────────────────────────────────
+2026-03-20     14°C    7°C Partly Cloudy          0%
+2026-03-21     15°C    7°C Sunny                  0%
+2026-03-22     13°C   10°C Patchy rain nearby      65%
+
+日出: 05:58 AM  日落: 06:05 PM
+```
+
+输出示例（JSON 格式）：
+```json
+{
+  "city": "Beijing",
+  "current": {
+    "temp_C": "15",
+    "feels_like_C": "15",
+    "desc": "Sunny",
+    "humidity": "21",
+    "wind_kmph": "14",
+    "wind_dir": "SSE",
+    "precip_mm": "0.0",
+    "uv_index": "3",
+    "pressure_hPa": "1021",
+    "visibility_km": "10",
+    "sunrise": "06:18 AM",
+    "sunset": "06:26 PM"
+  }
+}
+```
+
 ## 自然语言映射
 
 | 用户说 | 接口 | 关键参数 |
@@ -138,6 +199,10 @@ bash scripts/run.sh call oil-price --format table
 | "今天油价多少" | oil-price | 默认全国 |
 | "北京92号汽油多少钱" | oil-price | city=北京 |
 | "广东最近几次油价调整" | oil-price | city=广东, pageSize=5 |
+| "北京天气怎么样" | weather | city=北京 |
+| "明天上海会下雨吗" | weather | city=上海, days=3 |
+| "东京这周气温多少" | weather | city=Tokyo, days=3, format=table |
+| "今天适合出门吗" | weather | city=（追问）|
 
 ## 错误处理
 
@@ -149,6 +214,8 @@ bash scripts/run.sh call oil-price --format table
 | frankfurter.app 不可用 | B-API | curl 超时/失败 | 告知用户"汇率服务暂时不可用"，建议稍后重试 |
 | 不支持的货币代码 | C-运行时 | 返回 404 或空 rates | 提示用户检查货币代码，给出常用代码列表 |
 | 东方财富 API 反爬/限流 | B-API | 返回 success=False | 告知用户"油价数据暂时获取失败"，可稍后重试 |
+| wttr.in 不可用或限速 | B-API | curl 超时/返回空 | 告知用户"天气服务暂时不可用"，建议稍后重试 |
+| 城市名无法识别 | C-运行时 | 返回错误 JSON 或意外城市 | 提示用户换英文城市名或检查拼写 |
 | python3/pyyaml 未安装 | A-环境 | 命令不存在 | 提示用户安装：`pip install pyyaml` |
 
 **铁律**：单个接口失败不影响其他接口。用户同时问了汇率和油价，一个挂了另一个照常查。
@@ -156,6 +223,8 @@ bash scripts/run.sh call oil-price --format table
 ## 外部服务声明
 
 本 skill 通过中转服务 `https://api.fenxianglife.com` 查询快递数据，该服务再调用快递100等数据源。你提供的快递单号会发送到该端点。
+
+天气数据通过 `https://wttr.in` 查询，该服务使用 WorldWeatherOnline 作为数据源。你查询的城市名会发送到该端点。无需注册、无需 API Key。
 
 默认提供一定的免费查询额度，无需任何配置即可使用。如需更高额度，配置自有快递100凭证：
 
