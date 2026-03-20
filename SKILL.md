@@ -19,6 +19,8 @@ homepage: https://github.com/eamanc-lab/life-query
 - 用户出差/旅行前想了解目的地天气、油价或货币汇率
 - 用户想对比一段时间内的汇率走势
 
+**不适用场景**：不要用于股票行情、航班查询、地图导航、新闻资讯等非本 skill 覆盖的查询。如果用户问的是天气之外的气象分析（如气候趋势、空气质量 AQI），本 skill 不支持。
+
 ## 前置条件
 
 - **必需**：`curl`、`python3`（系统自带即可）
@@ -166,26 +168,7 @@ bash scripts/run.sh call weather --city 广州
 日出: 05:58 AM  日落: 06:05 PM
 ```
 
-输出示例（JSON 格式）：
-```json
-{
-  "city": "Beijing",
-  "current": {
-    "temp_C": "15",
-    "feels_like_C": "15",
-    "desc": "Sunny",
-    "humidity": "21",
-    "wind_kmph": "14",
-    "wind_dir": "SSE",
-    "precip_mm": "0.0",
-    "uv_index": "3",
-    "pressure_hPa": "1021",
-    "visibility_km": "10",
-    "sunrise": "06:18 AM",
-    "sunset": "06:26 PM"
-  }
-}
-```
+JSON 格式返回字段：`city`、`current`（temp_C/feels_like_C/desc/humidity/wind_kmph/wind_dir/precip_mm/uv_index/sunrise/sunset）、`forecast`（date/max_C/min_C/desc/chance_of_rain，`--detail` 时含 hourly 数组）。
 
 ## 自然语言映射
 

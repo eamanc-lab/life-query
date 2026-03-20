@@ -17,24 +17,32 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$CITY" ]]; then
-  echo "错误: 请指定城市，例如 --city 北京" >&2
+  echo '{"status":"error","error_type":"missing_parameter","missing":"city","suggestion":"请指定城市名，例如 --city 北京","example":"bash scripts/run.sh call weather --city 北京"}' >&2
   exit 1
 fi
 
 # URL 编码城市名
 ENCODED_CITY=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$CITY")
 
-RESP=$(curl -sf "https://wttr.in/${ENCODED_CITY}?format=j1&m")
+# 请求天气数据，带超时控制
+RESP=$(curl -sf --max-time 10 "https://wttr.in/${ENCODED_CITY}?format=j1&m" 2>/dev/null) || {
+  echo '{"status":"error","error_type":"api_unavailable","service":"wttr.in","suggestion":"天气服务暂时不可用，请稍后重试。如持续失败，可尝试使用英文城市名。"}' >&2
+  exit 1
+}
+
+# 通过环境变量传 JSON，sys.argv 传参数，避免 stdin 冲突和 shell 注入
+export _WEATHER_JSON="$RESP"
 
 if [[ "$FORMAT" == "table" ]]; then
-  echo "$RESP" | python3 -c "
-import json, sys
+  python3 -c "
+import json, os, sys
 
-data = json.load(sys.stdin)
+data = json.loads(os.environ['_WEATHER_JSON'])
+city = sys.argv[1]
+days = int(sys.argv[2])
+
 cur = data.get('current_condition', [{}])[0]
 weather_list = data.get('weather', [])
-city = '${CITY}'
-days = ${DAYS}
 
 # 当前天气
 desc = cur.get('weatherDesc', [{}])[0].get('value', '')
@@ -62,7 +70,6 @@ if forecasts:
         maxt = day.get('maxtempC', '')
         mint = day.get('mintempC', '')
         hourly = day.get('hourly', [])
-        # 取中午 12:00 时段（index 4）的天气作为当天代表
         mid = hourly[4] if len(hourly) > 4 else {}
         ddesc = mid.get('weatherDesc', [{}])[0].get('value', '')
         rain = mid.get('chanceofrain', '0')
@@ -74,17 +81,18 @@ if weather_list:
     sunrise = astro.get('sunrise', '')
     sunset = astro.get('sunset', '')
     print(f'\n日出: {sunrise}  日落: {sunset}')
-"
+" "$CITY" "$DAYS"
 else
-  echo "$RESP" | python3 -c "
-import json, sys
+  python3 -c "
+import json, os, sys
 
-data = json.load(sys.stdin)
+data = json.loads(os.environ['_WEATHER_JSON'])
+city = sys.argv[1]
+days = int(sys.argv[2])
+detail = sys.argv[3] == 'true'
+
 cur = data.get('current_condition', [{}])[0]
 weather_list = data.get('weather', [])
-city = '${CITY}'
-days = ${DAYS}
-detail = '${DETAIL}' == 'true'
 
 result = {
     'city': city,
@@ -138,5 +146,5 @@ if forecasts:
         result['forecast'].append(entry)
 
 print(json.dumps(result, ensure_ascii=False, indent=2))
-"
+" "$CITY" "$DAYS" "$DETAIL"
 fi
